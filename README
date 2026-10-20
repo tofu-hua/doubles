@@ -1,0 +1,252 @@
+This directory includes data and python/R code for the following paper:
+
+Robert Hsuan-Fu Hua, Ruby Chiu-Hsing Weng (2026). "A general Bayesian two-stage rating system for inferring teams and individuals from paired comparisons."
+
+Contents:
+1. Data
+  1.1 sports data: volley.csv and tennis.csv
+  1.2 game data: sample.dat
+2. Code
+  2.1 doublesAverage.py
+  2.2 glicko_doublesAverage.py
+  2.3 halo2.py
+  2.4 McNemar_test.R
+  
+=======
+1. Data
+=======
+
+1.1 volley.csv and tennis.csv 
+
+The file contains at least the following four columns: "winner1_name", "winner2_name", "loser1_name", "loser2_name".
+
+1.2 sample.dat
+Due to copyright issue, the Halo2 data (SmallTeams and LargeTeams data) used in the paper are not given here. Yet, a sample data is provided for illustration. The data format is as follows.
+
+num_game 
+num_total_players 
+game_id  team1_size  team2_size  team1_score  team2_score
+player_id score             -----------------------
+player_id score             individual's id & score
+player_id score             in 1st team of 1st game        
+...                         -----------------------
+player_id score             -----------------------
+player_id score             individual's id & score
+player_id score             in 2nd team of 1st game        
+...                         -----------------------
+
+    
+
+See data/sample.dat for an example.
+
+
+==================
+2. code (python/R)
+==================
+
+2.1 doublesAverage.py
+===========
+
+<Description> 
+
+The code is used to perform Elo and two-stage Elo for volley.csv and tennis.csv data. See Algorithm 2 in the paper.
+
+<Usage>
+
+  python3 doublesAverage.py data.csv value1
+
+
+<Input arguments>
+
+  "data.csv": data in use
+
+  "value1": 0 0r 1, with 0 corresponding to long-term forecast; and 1 corresponding to rolling forecast
+           
+<Example>
+
+  python3 doublesAverage.py volley.csv 0
+  
+<Outputs>
+
+(1) The following are shown on the screen:
+
+  volley
+  11596
+  Averagevolley_0
+  Averagevolley_0/
+  training size: 9998
+  testing size: 1598
+  errRate_elo_eloD.txt
+  (Elo) K with min discrepancy in train: 60
+  (Elo-D) K with min discrepancy in train: 60
+
+  It says that there are a total of 11596 games; training set contains 9998 games and test set contains 1598 games. Some results are saved in the directory Averagevolley_0.
+ 
+(2) Under the directory Averagevolley_0/
+
+  - The prediction errors in left-hand side of Figure 2(a) can be found in errPlot_Elo_EloD.png.
+  - The values for plotting errPlot_Elo_EloD.png can be seen in errRate_elo_eloD.txt.
+  - Prediction results in Table 3(a) are also extracted from errRate_elo_eloD.txt.
+
+(3) The other results in Figure 2 and Tables 3 & 4 can be obtained similarly by running
+
+    python3 doublesAverage.py volley.csv 1 
+    python3 doublesAverage.py tennis.csv 0
+    python3 doublesAverage.py tennis.csv 1
+
+
+2.2 glicko_doublesAverage.py
+===========
+
+<Description> 
+
+  The code is used to perform Glicko and the two-stage Glicko for volley.csv and tennis.csv data. See Algorithm 3 in the paper.
+
+<Usage>
+
+  python3 glicko_doublesAverage.py data.csv value1 value2
+
+
+<Input arguments>
+
+  "data.csv": data in use; for instance, tennis.csv or volley.csv
+
+  "value1": 0 0r 1, with 0 corresponding to long term forecast; and 1 corresponding to rolling forecast.
+  "value2": the number of lower bound on sigma
+  
+<Example>
+
+  python3 glicko_doublesAverage.py volley.csv 0 0
+
+<Outputs>
+
+(1) The following are shown on the screen:
+  
+  volley
+  11596
+  AVEglickoOUTPUTvolley_0_0
+  AVEglickoOUTPUTvolley_0_0/
+ 
+(2) Under the directory "AVEglickoOUTPUTvolley_0_0", there are several files, where the following two
+ 
+  "errRate_glicko.txt"
+  "errRate_glickoD.txt"
+  
+contain the error rates for various combinations of initial (sigma, nu) for Glicko and two-stage Glicko, respectively. Each initial sigma is combined with 5 different starting nu values. The file "errRateBest_both.txt" displays the best starting nu for each initial sigma; and the best two combinations are reported in Table 5(a). 
+           
+(3) The results in Table 5(a) and Table 6(a)(b) can be obtained by running
+
+  python3 glicko_doublesAverage.py volley.csv 1 0
+  python3 glicko_doublesAverage.py tennis.csv 0 0
+  python3 glicko_doublesAverage.py teniis.csv 1 0
+
+2.3 halo2.py
+=================
+
+<Description> 
+
+  The code is used to perform the two-stage rating method for Small Teams and Large Teams data. See Algorithm 1 in the paper. 
+
+<Usage>
+
+  python3 halo2.py data value
+
+<Input arguments>
+
+  "data": data in using
+  "value": 's' is for defining the team score as sum of individuals' scores, and 'a' is for defining the team score as the average score.
+
+
+<Example>
+
+  python3 halo2.py sample.dat a
+
+
+<Outputs>
+
+(1) The following are shown on the screen:
+
+  sample
+  halo_sample_aScore
+  halo_sample_aScore/
+  accRate_ave.txt
+  accRate_sum.txt
+
+accRate_ave.txt
+   Total   Correct      Acc   Larger Win   Smaller Win
+      18         6   0.3333            5             1
+
+  Larger Win Corr   Smaller Win Corr
+                0                  0
+
+  Acc Large Win   Acc Small Win
+         0.0000          0.0000
+accRate_sum.txt
+   Total   Correct      Acc   Larger Win   Smaller Win
+      18        12   0.6667            5             1
+
+  Larger Win Corr   Smaller Win Corr
+                5                  0
+
+  Acc Large Win   Acc Small Win
+         1.0000          0.0000
+
+(2) Under the directory halo_sample_aScore/ , it contains files as follow
+
+  "accRate_ave.txt"
+  "accRate_sum.txt"
+
+  These files contain results for average-strength and sum-up strength approaches.
+
+(3) If we run "python3 halo2.py smallteams s", it will give results on the left hand side of Table 1(a). 
+    If we run "python3 halo2.py smallteams a", it will give results on the right hand side of Table 1(a).
+    Similarly, results in Table 1(b) can be obtained using the largeteams data.
+    However, due to the copyright issue, the real data are not provided here.
+
+
+2.4 McNemar_test.R
+=============
+
+<Description> 
+
+It conducts one-sided McNemar Test for comparing two rating systems.
+
+<Usage> 
+
+  source(McNemar_test.R)
+  McNemar_elo(filename_1, filename_2)
+
+<Input arguments> 
+
+  filename_1: output from one rating system; e.g. Averagevolley_0/elo_test.txt
+  
+  filename_2: output from another rating system; e.g. Averagevolley_0/eloD_test.txt
+  
+  
+<Example>
+
+# in R console, do the following commands:
+
+source(McNemar_test.R)
+
+dat1 = read.csv('Averagevolley_0/elo_test.txt', header = TRUE)
+dat2 = read.csv('Averagevolley_0/eloD_test.txt', header = TRUE)
+result = McNemar_elo(dat1, dat2)
+result
+
+
+<Outputs>
+
+(1) It gives the z-value for 1-sided McNemar test, and the associated p-value. This is the p-value reported in Table 3(a).
+
+(2) The p-values in Table 3(b) and Table 4(a)(b) can be obtained similarly. For instance, the p-value in Table 3(b) is obtained by
+
+  dat1= read.csv('Averagevolley_1/elo_test.txt', header = TRUE)
+  dat2= read.csv('Averagevolley_1/eloD_test.txt', header = TRUE)
+  result= McNemar_elo(dat1, dat2)
+  result
+
+(3) The p-values for Glicko vs. two-stage Glicko (in Tables 5 and 6) can be obtained using McNemar_g(.,.).
+
+
+For any questions and comments, please email hh24c@fsu.edu or chweng@nccu.edu.tw.
